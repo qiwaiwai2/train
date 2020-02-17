@@ -1,0 +1,1574 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta http-equiv="content-type" content="no-cache, must-revalidate" />
+    <meta http-equiv="expires" content="Wed, 26 Feb 1997 08:21:57 GMT"/>
+    <title>GPS轨迹</title>
+    <link rel="stylesheet" href="./common.css">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+    <style>
+        body{
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        html, body,#app, #container {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+        .input-card .btn{
+            margin-right: 1.2rem;
+            width: 9rem;
+        }
+
+        .input-card .btn:last-child{
+            margin-right: 0;
+        }
+		.amap-marker-label{
+            border: 0;
+            background-color: transparent;
+        }
+		.info{
+            position: relative;
+            top: 0;
+            right: 0;
+            min-width: 0;
+			padding: 4px;
+        }
+        .amap-logo,.amap-copyright{
+            display: none !important
+        }
+        .slider{
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width:220px;
+            background-color: #4275DE;
+            z-index: 101;
+            color: #fff;
+            padding: 10px;
+            display: flex;
+            flex-flow: column;
+            transform: translateX(-220px);
+            transition: 1s;
+            padding-bottom: 70px;
+        }
+        .isShow{
+            transform: translateX(0);
+            transition: 1s;
+        }
+        .slider_title{
+            height: 25px;
+        }
+        .slider_title span:nth-child(1){
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            vertical-align: middle;
+        }
+        .slider_title .selectAllActive{
+            background:url("./img/selectAllIcon.png") no-repeat center center #fff;
+            background-size: 12px 9px
+        }
+        .slider_title span:nth-child(2){
+            font-size: 14px;
+            margin-left: 10px;
+            vertical-align: middle;
+            font-weight: 500;
+        }
+        .man_list{
+            flex: 1;
+            overflow-y: auto;
+        }
+        .man_list ul li{
+            padding: 10px;
+            padding-left: 5px;
+            cursor: pointer;
+        }
+        .man_list ul li .listfirst span:nth-child(1){
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 1px solid #666;
+            border-radius: 50%;
+            background-color: #fff;
+            /* margin-right: 10px; */
+            
+        }
+        .man_list ul li p span{
+            font-weight: 500;
+        }
+        .man_list ul li p:nth-child(2){
+            padding-left: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .man_list ul li p:nth-child(3){
+            padding-left: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .man_list ul li p:nth-child(4){
+            padding-left: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        [v-cloak] {
+            display: none;
+        }
+        .control{
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            margin-top: -80px;
+            z-index: 100;
+            width: 30px;
+            height: 60px;
+            background-color: #4275DE;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .control img{
+            height: 40px;
+            cursor: pointer;
+        }
+        .rank{
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 200px;
+            height: 50px;
+            background-color: #2987DD;
+        }
+        .rank img{
+            width: 100%;
+        }
+        .rankModel{
+            background-color: #fff;
+            padding-bottom: 1px;
+        }
+        .ranklist li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            line-height: 32px;
+        }
+        .ranklist li:nth-child(odd){
+            background-color: #EEF4FF;
+        }
+        .ranklist li span{
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .ranklist li p span:nth-child(2){
+            margin-left: 20px;
+        }
+        .rankBottom{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #4275DE;
+            height: 30px;
+            cursor: pointer;
+        }
+        .rankBottom img{
+            width: 12px;
+            height: 10px;
+        }
+        .bottomslider{
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 60px;
+            background-color: #fff;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            z-index: 101;
+        }
+        .lineDiv{
+            position: relative;
+            height: 12px;
+            width: 100%;
+            background-color: #F2F3F7;
+            border-radius: 10px;
+        }
+        .lineDiv .minDiv {
+            position: absolute;
+            top: -3px;
+            left: 0;
+            width: 18px;
+            height: 18px;
+            background: #2987DD;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        .playbtn img{
+            width: 14px;
+            margin-right: 20px;
+            cursor: pointer;
+        }
+        /*定义滚动条高宽及背景 高宽分别对应横竖滚动条的尺寸*/  
+       
+        /*定义滚动条轨道 内阴影+圆角*/  
+        ::-webkit-scrollbar-track  
+        {  
+            border-radius: 10px;  
+            background-color: #F5F5F5;  
+        }  
+        
+        /*定义滑块 内阴影+圆角*/  
+        ::-webkit-scrollbar-thumb  
+        {  
+            border-radius: 10px;  
+            background-color: #999;  
+        }  
+        .man_list::-webkit-scrollbar{
+            width: 5px;
+        }
+        .man_list::-webkit-scrollbar-thumb{
+            background-color: #fff;
+        }
+        .man_list::-webkit-scrollbar-track{
+            background-color: #59ACF8;
+        }
+        .man_list::-webkit-scrollbar{
+            background-color: #59ACF8;
+        }
+        .showLine{
+            position: absolute;
+            left: 0;
+            height: 100%;
+            background-color: #2987DD;
+            border-radius: 20px;
+            width: 0px;
+        }
+        .head{
+            background-color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 40px;
+            line-height: normal;
+            background-image: linear-gradient(to right, #384dc4  , #2b8ddc);
+            padding: 0 15px;
+        }
+        .logo{
+            color: #fff;
+            display: flex;
+            align-items: center;
+        }
+        .logo img{
+            width: 70px;
+        }
+        .logo p:nth-child(2){
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .userInfo{
+            display: flex;
+            align-items: center;
+        }
+        .userInfo img{
+            width: 15px;
+            height: 15px;
+            margin-right: 5px
+        }
+        .userInfo div{
+            display: flex;
+            align-items: center;
+            color: #fff;
+            margin-left: 14px;
+            cursor: pointer;
+        }
+        .userInfo div span{
+            font-size: 12px;
+        }
+        .setActive{
+            color:#D10011
+        }
+        .selectMap{
+            position: absolute;
+            top: 50px;
+            right: 10px;
+        }
+        .rankBtn{
+            position: absolute;
+            top: 90px;
+            right: 10px;
+            width: 100px;
+            height: 33px;
+            line-height: 33px;
+            background-color: #fff;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            text-align: center;
+        }
+        .rankBtnActive{
+            background-color: #4275DE;
+            color: #fff;
+        }
+        .selectMap select{
+            width: 100px;
+            height: 35px;
+            border-radius: 5px;
+        }
+        .dataRank{
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width:100%;
+            height: 250px;
+            background-color: #fff;
+            z-index: 100;
+            color: #fff;
+            display: flex;
+            flex-flow: column;
+        }
+        .dataRankbox{
+            height: 250px;
+            /* overflow-y: auto; */
+        }
+        .rankTitle{
+            background-color: #4275DE;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 16px;
+        }
+        .dataRanklist{
+            padding: 8px;
+            height: 220px;
+            overflow-y: auto;
+        }
+        .dataRanklist li{
+            background-color: #E4EDFF;
+            border-radius: 4px;
+            color: #4275DE;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .manInfo{
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .Ratio{
+            display: flex;
+            align-items: center;
+        }
+        .Ratio span:nth-child(1){
+            display: inline-block;
+            /* width: 80px; */
+            height: 8px;
+            border-radius: 8px;
+            margin-right: 4px;
+        }
+        .disRatio{
+            background-image:linear-gradient(to right,#F88E6D,#F7571F);
+        }
+        .speedRatio{
+            background-image:linear-gradient(to right,#0DC015,#21E24E);
+        }
+        .gameTime{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 100px;
+            height: 33px;
+            line-height: 33px;
+            background-color: #fff;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- <div class="head">
+            <div class="logo">
+                <img src="./img/logo.png" alt="">
+                <p>秀跑训练管理系统</p>
+            </div>
+            <div class="userInfo">
+                <div @click="home">
+                    <img src="./img/zhuye.png" alt="">
+                    <span>主页</span>
+                </div>
+                <div @click="$router.go(-1)">
+                    <img src="./img/fanhui.png" alt="">
+                    <span>返回</span>
+                </div>
+            </div>
+        </div> -->
+        <div class="slider" :class="isShowSlide?'isShow':''">
+            <div class="slider_title" @click="selectAll">
+                <span  :class="isSelectAll?'selectAllActive':''"></span>
+                <span>Select All</span>
+            </div>
+            <div class="man_list">
+                <ul>
+                    <li v-for = "(item,index) in playInfo" :key="index" @click="selectPlayer(index,item.id)">
+                        <p class="listfirst">
+                            <span :style="{backgroundColor:item.isSelect?item.color:'#fff'}"></span>
+                            <span style="font-size: 12px;" v-cloak>{{item.no}} {{item.name}}</span>
+                            <!-- <span style="display: block;margin-left: 20px;font-size: 12px;"></span> -->
+                        </p>
+                        <!-- <p></p> -->
+                        <p v-cloak v-show="!isPlay">
+                            <span style="margin-right: 10px;">{{item.totalDistance}} km</span>
+                            <span>{{item.speed}} min/km</span>
+                        </p>
+                        <p v-show="!isPlay">
+                            <span style="margin-right: 5px;">{{item.allTime}}</span style="margin-right: 5px;">
+                            <span style="margin-right: 5px;">{{item.speed2}} km/h</span style="margin-right: 5px;">
+                        </p>
+                        <p v-cloak>
+                            <span @click.stop="select_effect(index,'center')" :class="item.centerSet?'':''" style="margin-right: 10px;">Center</span>
+                            <span @click.stop="select_effect(index,'highlight')" :class="item.highlightset?'setActive':''">Highlight OFF</span>
+                        </p>
+                    </li>
+                </ul>
+            </div>
+            <div class="control" @click="controlSlide">
+                <img v-if="!isShowSlide" style="transform: rotate(180deg);" src="./img/jiantou.png" alt="">
+                <img v-cloak v-else src="./img/jiantou.png" alt="">
+            </div>
+        </div>
+        <div id="container" @click="getPositionLat"></div>
+        <div v-cloak v-show="!isPlay" class="gameTime" >{{gameTime}}</div>
+        <div class="selectMap">
+            <select name="" id="maptype" @change="selectMapType">
+                <option value="1">道路图</option>
+                <option value="2">卫星图</option>
+                <option value="0">无底图</option>
+                
+               
+            </select>
+        </div>
+        <div v-cloak v-show="!isPlay" class="rankBtn" @click="controlRank" :class="isShowRank?'rankBtnActive':''">对比栏</div  >
+        <div v-cloak v-show="isPlay" class="bottomslider">
+            <div class="playbtn" @click="play">
+                <img v-if="suspend" src="./img/play.png" alt="">
+                <img v-cloak v-else src="./img/pause.png" alt="">
+            </div>
+            <div id="lineDiv" class="lineDiv">
+                <div id="showLine" class="showLine"></div>
+                <div id="minDiv" class="minDiv">
+                    <!-- <div id="vals" class="vals">{{}}</div> -->
+                </div>
+            </div>
+        </div>
+        <div v-cloak v-show="isShowRank" class="dataRank">
+            <div class="dataRankbox" >
+                <div class="rankTitle">实时数据对比</div>
+                <ul class="dataRanklist">
+                    <li v-for = "(item,index) in playInfo" v-show="item.isSelect" :key="index">
+                        <p class="manInfo" v-cloak>{{item.no}} {{item.name}}</p>
+                        <p class="Ratio">
+                            <span v-cloak class="disRatio" :style="{width:item.disRoutLength+'px'}"></span v-cloak>
+                            <span v-cloak>{{item.totalDistance}}km</span v-cloak>
+                        </p>
+                        <p class="Ratio">
+                            <span v-cloak class="speedRatio" :style="{width:item.speedRoutLength+'px'}"></span v-cloak>
+                            <span v-cloak>{{item.speed}}min/km</span v-cloak>
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        </div v-show="isPlay">
+    </div>
+
+<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=0f31751255b231fcd092f6431b136a83&plugin=AMap.GraspRoad&plugin=AMap.MouseTool"></script>
+<script src="https://webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+<script>
+    $(function(){
+        var src_posi_Y = 0, dest_posi_Y = 0, move_Y = 0, is_mouse_down = false, destHeight = 30;
+        $(".rankTitle").mousedown(function(e){
+            src_posi_Y = e.pageY;
+            is_mouse_down = true;
+        })
+        $(".rankTitle").on('touchstart',function(e){
+            src_posi_Y = e.originalEvent.changedTouches[0].pageY;
+            is_mouse_down = true;
+        })
+        $(document).mouseup(function(e){
+            if(is_mouse_down){
+                is_mouse_down = false;
+            }
+        })
+        $(document).on('touchend',function(e){
+            if(is_mouse_down){
+                is_mouse_down = false;
+            }
+        })
+        $(document).mousemove(function(e){
+            dest_posi_Y = e.pageY;
+            move_Y = src_posi_Y - dest_posi_Y;
+            src_posi_Y = dest_posi_Y;
+            destHeight = $(".dataRank").height() + move_Y;
+            if(is_mouse_down){
+                $(".dataRank").css("height", destHeight );
+                $('.dataRanklist').css('height',destHeight-30)
+            }
+        });
+        $(document).on('touchmove',function(e){
+            dest_posi_Y = e.originalEvent.changedTouches[0].pageY;
+            move_Y = src_posi_Y - dest_posi_Y;
+            src_posi_Y = dest_posi_Y;
+            destHeight = $(".dataRank").height() + move_Y;
+            if(is_mouse_down){
+                $(".dataRank").css("height", destHeight > 30 ? destHeight : 30);
+                $('.dataRanklist').css('height',destHeight-30)
+            }
+            
+        })
+    });
+
+    function getQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");  
+        var r = window.location.search.substr(1).match(reg);  
+        if (r != null) return unescape(r[2]);  
+        return null;  
+    }
+    var socketurl = getQueryString('gameid')+getQueryString('gameitemid')+getQueryString('gameitemgroupid')
+    var baseUrl = "http://run.alongtech.com:8090/";
+    var app = new Vue({
+        el: '#app',
+        data(){
+            return {
+                isShowRank:false, //是否显示对比栏
+                playInfo:[],
+                isSelectAll:true,//是否全选
+                createmap:null,
+                isShowSlide:false,
+                imgurl:'./img/ME.jpg',
+                sids:[],//人员id列表
+                theamap:null,
+                colorArr: [
+                    "#0000ff",
+                    "#fe0000",
+                    "#008000",
+                    "#800000",
+                    "#000080",
+                    "#ff0080",
+                    "#ff8000",
+                    "#0080ff",
+                    "#7f00fd",
+                    "#08bf08",
+                    "red"
+                ],
+                isBegin: true, //是否开始播放
+                speedNumber:10, //播放速度
+                suspend:true, //是否播放
+                moveStep:0.1, //滚动条移动速度
+                progressMan:1000, //最大值
+                isPlay:true, //是否直播
+                isFirst:false, //是否拿到第一个选手数据
+                manList:[],
+                tailLength:20 ,
+                timerlist:[], //定时器数组
+                imgUrl: "", //贴图图片
+                mapoacity:0.7, //贴图透明度
+                westlng:'', //西南角经度
+                southlat:'', //西南角纬度
+                eastlng:'', //东北角经度
+                northlat:'', //东北角纬度
+                mapCenter: [113.9439660000, 22.5288250000], //地图中心
+                maptypevalue:0, //底图选择
+                satellitelayer:null, //卫星图层
+                satelTilelayer:null, //道路图层
+                orderInter:null, //排序计时器
+                contextMenuPositon:null,//右键窗口坐标
+                mouseTool:null,//右键工具
+                contextMenu:null,//右键菜单
+                alltimeInter:null, //累计用时计时器
+                rankMaxLength:100, //进度条长度最大值
+                speedMax:20, //速度最大值
+                disMax:10, //距离最大值
+                gameItemTime:'2019-12-27 08:00:00',
+                gameTime:'00:00:00'
+            }
+        },
+        async mounted(){
+            this.gameItemTime = String(getQueryString('startTime').substring(0,10)+' '+getQueryString('startTime').substring(10)).replace(/\-/g, '/')
+            if(getQueryString('isplay')==2 || getQueryString('isplay')==0){ //回放
+                this.isPlay = true
+            }else{
+                this.isPlay = false
+            }
+            
+            this.getmapGpsData()
+            this.isFirst = false
+            this.lineDiv = document.getElementById('lineDiv'); //长线条
+            this.minDiv = document.getElementById('minDiv'); //小方块
+            this.showLine = document.getElementById('showLine') //颜色条
+            this.ifBool = false; //判断鼠标是否按下
+            this.minDiv.addEventListener("touchstart", this.slidestart);
+            this.minDiv.addEventListener("mousedown", this.slidestart);
+            //拖动
+            window.addEventListener("touchmove", this.slidemove);
+            window.addEventListener("mousemove", this.slidemove);
+            //鼠标松开
+            window.addEventListener("touchend", this.slideend);
+            window.addEventListener("mouseup", this.slideend);
+            this.sids = []
+            this.mapcenter = [113.9439660000,22.5288250000]
+            this.getMap()
+            await this.getdata()
+            if(getQueryString('isplay')==2){ //回放
+                this.getGpsData()
+            }
+            this.rankMaxLength = parseInt($('#container').css('width'))/2 //进度条长度最大值
+            
+        },
+        methods:{
+            controlRank(){ //是否展示对比栏
+                this.isShowRank = !this.isShowRank
+            },
+            getPositionLat (e){ //根据坐标获取
+                return
+                if(e.srcElement.id == 'getposition'){
+                    this.suspend = true
+                    this.isBegin = true
+                    this.stopTimer()
+                    for(let i = 0;i<this.timerlist.length;i++){
+                        clearTimeout(this.timerlist[i])
+                    }
+                    let progressList = []
+                    let selectPosition = [this.contextMenuPositon.Q,this.contextMenuPositon.P]
+                    for(let i = 0 ;i<this.manList.id.length;i++){
+                        let id = this.manList.id[i]
+                        let listArr = this.manList["arr" + id]
+                        let dislist = []
+                        let ratio = this.progressMan / listArr.length
+                        for(let j = 0;j<listArr.length;j++){
+                            let dis = AMap.GeometryUtil.distance(listArr[j], selectPosition)
+                            dislist.push({
+                            index:j,
+                            dis:dis
+                            })
+                        }
+                        dislist.sort(this.compare('dis'))
+                        let thevalue = dislist[0].index
+                        let value = thevalue*ratio
+                        progressList.push(value)
+                        this.manList["historymarker" + id].stopMove()
+                        this.manList["historypassedPolyline" + id].setPath([])
+                        this.manList["historymarker" + id].setPosition(listArr[parseInt(thevalue)])
+                        this.manList["PointArr" + id] = thevalue
+                        this.manList["positionArr" + id] = thevalue
+                    }
+                    progressList.sort()
+                    this.inputValue = progressList[0]
+                }
+                this.mouseTool.close();
+                this.contextMenu.close();
+            },
+            selectMapType(){ //选择地图效果
+                let maptype =  document.getElementById("maptype").value
+                if(maptype == 2){ //卫星图
+                    this.createmap.add(this.satellitelayer)
+                }else if(maptype == 1){ //道路图
+                    this.createmap.add(this.satelTilelayer)
+                    this.createmap.remove(this.satellitelayer)
+                }else{ //无底图
+                    this.createmap.remove(this.satelTilelayer)
+                    this.createmap.remove(this.satellitelayer)
+                }
+                this.maptypevalue = maptype
+            },
+            home(){
+                window.location.href = 'http://run.alongtech.com:82/cross_web_xl/admin-dist/index.html#/home'
+            },
+            select_effect(index,ele){//选择显示效果
+                // console.log(this.manList)
+                if(ele == 'center'){
+                    this.$set(this.playInfo[index], 'centerset', !this.playInfo[index].centerset)
+                    // console.log(this.playInfo[index].id)
+                    // console.log(this.manList['historymarker'+this.playInfo[index].id].getPosition())
+                    if(!this.isPlay){ //直播
+                        this.createmap.setCenter([
+                            this.playInfo[index].marker.getPosition().lng,
+                            this.playInfo[index].marker.getPosition().lat
+                        ])
+                    }else{ //回放
+                        this.createmap.setCenter([
+                            this.manList['historymarker'+this.playInfo[index].id].getPosition().lng,
+                            this.manList['historymarker'+this.playInfo[index].id].getPosition().lat
+                        ])
+                    }
+                }else if(ele == 'highlight'){
+                    let infoList = document.getElementById(this.playInfo[index].id)
+                    if(!this.playInfo[index].highlightset){ //高亮
+                        infoList.style.background="#fff"
+                        infoList.style.border="1px solid #333"
+                    }else{ //取消高亮效果
+                        infoList.style.background="transparent"
+                        infoList.style.border="none"
+                    }
+                    this.$set(this.playInfo[index], 'highlightset', !this.playInfo[index].highlightset)
+                }
+            },
+            controlSlide(){ //控制人员列表
+                this.isShowSlide = !this.isShowSlide
+            },
+            timer() { //计时器函数
+                let that = this
+                if(that.minDiv.style.left){
+                    let theleft = parseFloat(that.minDiv.style.left)
+                    theleft += that.moveStep
+                    that.minDiv.style.left = theleft + 'px'
+                }else{
+                    that.minDiv.style.left = '1px'
+                    let theleft = parseFloat(that.minDiv.style.left)
+                    theleft += that.moveStep
+                    that.minDiv.style.left = theleft + 'px'
+                }
+                this.showLine.style.width = parseFloat(that.minDiv.style.left) + 18 +'px'
+                if (parseFloat(that.minDiv.style.left) >= (this.lineDiv.offsetWidth - 18)) {
+                    //进度条已走完
+                    clearInterval(this.inter)
+                }
+            },
+            startTimer() {
+                //开始计时器
+                this.inter = setInterval( this.timer, 1000/this.speedNumber)
+            },
+            stopTimer() {
+                //停止计时器
+                clearInterval(this.inter)
+            },
+            onChange(value) {//进度条变化
+                this.suspend = true
+                let that = this
+                this.isBegin = true
+                this.stopTimer()
+                for(let i = 0;i<this.timerlist.length;i++){
+                    clearTimeout(this.timerlist[i])
+                }
+                for (let i = 0; i < that.manList.id.length; i++) {
+                    let id = that.manList.id[i]
+                    let listArr = that.manList["arr" + id]
+                    let ratio = (this.lineDiv.offsetWidth - 18) / listArr.length
+                    let thevalue = Math.ceil(value / ratio)
+                    that.manList["historymarker" + id].stopMove()
+                    that.manList["historymarker" + id].setPosition(listArr[parseInt(thevalue) - 1])
+                    if (parseInt(thevalue) > that.tailLength) {
+                        that.manList["historypassedPolyline" + id].setPath(
+                            listArr.slice(parseInt(thevalue) - that.tailLength, parseInt(thevalue))
+                        )
+                    } else {
+                        that.manList["historypassedPolyline" + id].setPath(
+                            listArr.slice(0, parseInt(thevalue)),
+                            parseInt(thevalue)
+                        )
+                    }
+                    that.manList["PointArr" + id] = thevalue
+                }
+            },
+            play() { //播放按钮
+                let that = this
+                that.suspend = !that.suspend
+                if (this.suspend) {
+                    // console.log('暂停')
+                    for (let i = 0; i < that.manList.id.length; i++) {
+                        let id = that.manList.id[i]
+                        that.manList["historymarker" + id].pauseMove()
+                    }
+                    this.stopTimer()
+                } else {
+                    // console.log('播放')
+                    if (this.isBegin) {
+                        if (that.manList && that.manList.id.length > 0) {
+                            this.startTimer()
+                            let starttime = that.manList.item[0].startTime
+                            let thistime
+                            for (let i = 0; i < that.manList.item.length; i++) {
+                                let id = that.manList.item[i].id
+                                let manitem = that.manList.item[i]
+                                thistime = manitem.startTime
+                                let listArr = that.manList["arr" + id]
+                                let testarr = []
+                                let j = 0
+                                if (that.manList["PointArr" + id]) {
+                                    let pointArrIndex = that.manList["PointArr" + id]
+                                    testarr = listArr.slice(0, pointArrIndex)
+                                    that.manList["historymarker" + id].moveAlong(
+                                        listArr.slice(pointArrIndex - 1),
+                                        that.manList["speed" + id] * that.speedNumber
+                                    )
+                                } else {
+                                    if(!that.isSync){ //实时
+                                        that.timerlist.push(
+                                            setTimeout(() => {
+                                                that.manList["historymarker" + id].moveAlong (
+                                                listArr,
+                                                that.manList["speed" + id] * that.speedNumber
+                                                )
+                                            }, that.getTimeDiff(thistime,starttime)/((that.speedNumber/2)+10))
+                                        )
+                                    } else { //同步
+                                        that.manList["historymarker" + id].moveAlong (
+                                            listArr,
+                                            that.manList["speed" + id] * that.speedNumber
+                                        )
+                                    }
+                                }
+                                that.manList["historymarker" + id].on("moving", function(e) {
+                                    let truthData = e.passedPath
+                                    let testarr2
+                                    if (that.manList["PointArr" + id]) {
+                                        truthData = testarr.concat(truthData)
+                                    }
+                                    if (truthData.length > that.tailLength) {
+                                        testarr2 = truthData.slice(truthData.length - that.tailLength)
+                                    } else {
+                                        testarr2 = truthData.slice(0)
+                                    }
+                                    that.manList["historypassedPolyline" + id].setPath(testarr2)
+                                })
+                            }
+                            this.isBegin = false
+                        } else {
+                            that.suspend = !that.suspend
+                        }
+                    } else {
+                        for (let i = 0; i < that.manList.id.length; i++) {
+                            let id = that.manList.id[i]
+                            that.manList["historymarker" + id].resumeMove()
+                        }
+                        this.startTimer()
+                    }
+                }
+            },
+            getdata(){ //获取人员
+                let that = this
+                $.ajax({//人员
+                    url:baseUrl+'along/CrossSportsmanController/findEntityList',
+                    type:'POST',
+                    async:false,
+                    data:JSON.stringify({
+                        competitionId: getQueryString('gameid'),
+                        competitionItemId: getQueryString('gameitemid'),
+                        groupId: getQueryString('gameitemgroupid')
+                    }),
+                    headers:{
+                        'Content-Type':'application/json;charset=UTF-8;'   
+                    },
+                    success(res){
+                        console.log(res)
+                        if (res.status == 1) {
+                            if (res.data.length > 0) {
+                                for (let i = 0; i < res.data.length; i++) {
+                                    let indexArr = String(i).split("");
+                                    let theindex = indexArr[indexArr.length - 1];
+                                    let item = res.data[i];
+                                    item.color = item.colorFlag?item.colorFlag:that.colorArr[theindex];
+                                    item.isSelect = true;
+                                    item.centerSet = false;
+                                    item.autocenterset = false;
+                                    item.highlightset = false;
+                                    item.fullrouteset = false;
+                                    item.totalDistance = 0
+                                    item.speed = '00:00'
+                                    item.speed2 = 0
+                                    item.allTime = that.getTimeDiff2(new Date(),that.gameItemTime)
+                                    item.speedRoutLength = (item.speed2*that.rankMaxLength)/that.speedMax
+                                    item.disRoutLength = (item.totalDistance*that.rankMaxLength)/that.disMax
+                                    that.playInfo.push(item)
+                                    if(i<2){
+                                        that.sids.push(item.id)
+                                    }
+                                }
+                                console.log(that.playInfo)
+                                if(!that.isPlay){ //直播
+                                    that.liveTelecast()
+                                    that.orderInter = setInterval(function(){
+                                        that.playInfo.sort(that.compare('totalDistance'))
+                                    },10000)
+                                    that.alltimeInter = setInterval(function(){
+                                        that.playInfo.forEach((item,i)=>{
+                                            that.$set(that.playInfo[i], 'allTime', that.getTimeDiff2(new Date(),that.gameItemTime))
+                                        })
+                                        that.gameTime = that.getTimeDiff2(new Date(),that.gameItemTime)
+                                        that.disMax = Math.ceil(that.playInfo[0].totalDistance)+2
+                                    },1000)
+                                }
+                            } else {
+                                alert("当前组别没有比赛人员！");
+                            }
+                        } 
+                    }
+                })
+            },
+            selectPlayer(index,id){//选择选手
+                if(this.playInfo[index].isSelect){
+                    if(this.playInfo[index].marker){
+                        this.createmap.remove(this.playInfo[index].marker)
+                        // this.playInfo[index].marker.hide()
+                    }
+                    if(this.playInfo[index].passedPolyline){
+                        this.createmap.remove(this.playInfo[index].passedPolyline)
+                        // this.playInfo[index].passedPolyline.hide()
+                    }
+                    if(this.playInfo[index].passedPolyline1){
+                        this.createmap.remove(this.playInfo[index].passedPolyline1)
+                        // this.playInfo[index].passedPolyline1.hide()
+                    }
+                    let manid = this.playInfo[index].id
+                    if(this.manList['historymarker'+id]){
+                        // this.createmap.remove(this.manList['historymarker'+id])
+                        // this.createmap.remove(this.manList['historypassedPolyline'+id])
+                        // this.createmap.remove(this.manList['historypassedPolyline1'+id])
+
+                        this.manList['historymarker'+id].hide()
+                        this.manList['historypassedPolyline'+id].hide()
+                    }
+                }else{
+                    
+                    if(this.playInfo[index].marker){
+                        // (this.playInfo[index].marker).show()
+                        this.createmap.add(this.playInfo[index].marker)
+                    }
+                    if(this.playInfo[index].passedPolyline){
+                        // (this.playInfo[index].passedPolyline).show()
+                        this.createmap.add(this.playInfo[index].passedPolyline)
+                    }
+                    if(this.playInfo[index].passedPolyline1){
+                        // (this.playInfo[index].passedPolyline1).show()
+                        this.createmap.add(this.playInfo[index].passedPolyline1)
+                    }
+                    if(this.manList['historymarker'+id]){
+                        // this.createmap.add(this.manList['historymarker'+id])
+                        // this.createmap.add(this.manList['historypassedPolyline'+id])
+                        // this.createmap.add(this.manList['historypassedPolyline1'+id])
+
+                        this.manList['historymarker'+id].show()
+                        this.manList['historypassedPolyline'+id].show()
+                    }
+                }
+                this.$set(this.playInfo[index], 'isSelect', !this.playInfo[index].isSelect)
+            },
+            selectAll(){//选择全部
+                this.isSelectAll = !this.isSelectAll
+                this.playInfo.forEach((item,itemIndex)=>{
+                    if(this.isSelectAll){
+                        this.$set(this.playInfo[itemIndex], 'isSelect', true)
+                        if(this.playInfo[itemIndex].marker){
+                            this.createmap.add(this.playInfo[itemIndex].marker)
+                        }
+                        if(this.playInfo[itemIndex].passedPolyline){
+                            this.createmap.add(this.playInfo[itemIndex].passedPolyline)
+                        }
+                        if(this.playInfo[itemIndex].passedPolyline1){
+                            this.createmap.add(this.playInfo[itemIndex].passedPolyline1)
+                        }
+
+                        if(this.manList['historymarker'+item.id]){
+                            // this.createmap.add(this.manList['historymarker'+item.id])
+                            // this.createmap.add(this.manList['historypassedPolyline'+item.id])
+                            // this.createmap.add(this.manList['historypassedPolyline1'+item.id])
+                            this.manList['historymarker'+item.id].show()
+                            this.manList['historypassedPolyline'+item.id].show()
+                        }
+                    }else{
+                        this.$set(this.playInfo[itemIndex], 'isSelect', false)
+                        if(this.playInfo[itemIndex].marker){
+                            this.createmap.remove(this.playInfo[itemIndex].marker)
+                        }
+                        if(this.playInfo[itemIndex].passedPolyline){
+                            this.createmap.remove(this.playInfo[itemIndex].passedPolyline)
+                        }
+                        if(this.playInfo[itemIndex].passedPolyline1){
+                            this.createmap.remove(this.playInfo[itemIndex].passedPolyline1)
+                        }
+                        if(this.manList['historymarker'+item.id]){
+                            // this.createmap.remove(this.manList['historymarker'+item.id])
+                            // this.createmap.remove(this.manList['historypassedPolyline'+item.id])
+                            // this.createmap.remove(this.manList['historypassedPolyline1'+item.id])
+                            this.manList['historymarker'+item.id].hide()
+                            this.manList['historypassedPolyline'+item.id].hide()
+                        }
+                    }
+                })
+
+            },
+            getMap(){
+                let that = this
+                that.theamap = AMap
+                that.satelTilelayer = new AMap.TileLayer() //道路图层
+                that.satellitelayer = new AMap.TileLayer.Satellite() //卫星图层
+                let imageLayer = new AMap.ImageLayer({
+                    //地图贴图
+                    url: 'http://run.alongtech.com:82/' + that.imgUrl,
+                    opacity: that.mapoacity,
+                    bounds: new AMap.Bounds(
+                        [that.westlng,that.southlat],//西南角经纬度
+                        [that.eastlng,that.northlat]//东北角经纬度
+                    ),
+                    zooms: [5, 20]
+                })
+                this.createmap = new AMap.Map("container", {
+                    resizeEnable: true,
+                    expandZoomRange:true,
+                    center: that.mapcenter,
+                    zooms:[3,20],
+                    zoom: 15,
+                    layers: [
+                        that.satelTilelayer,//图片切层,取消则不显示地图
+                        // new AMap.TileLayer.Satellite()
+                        imageLayer
+                    ]
+                });
+                this.createmap.setFitView();
+                //创建右键菜单
+                //自定义菜单类
+                //地图中添加鼠标工具MouseTool插件
+                return
+                that.mouseTool = new AMap.MouseTool(that.createmap)
+                var content = []
+                content.push("<div class='info context_menu'>")
+                content.push("<p style='min-width:60px;font-size:14px' id='getposition'>获取轨迹</p>")
+                content.push("</div>")
+                //通过content自定义右键菜单内容
+                that.contextMenu = new AMap.ContextMenu({isCustom: true, content: content.join('')})
+                //地图绑定鼠标右击事件——弹出右键菜单
+                that.createmap.on('rightclick', function (e) {
+                    that.contextMenu.open(that.createmap, e.lnglat)
+                    that.contextMenuPositon = e.lnglat //右键菜单位置
+                })
+            },
+            liveTelecast() {//直播
+                let that = this;
+                var websocket = null;
+                //判断当前浏览器是否支持WebSocket
+                if ("WebSocket" in window) {
+                    let baseurl1 = "http://run.alongtech.com:8088/";
+                    var url = baseurl1.replace("http", "ws") + "websocket?urlCode=" + socketurl; //20为客户端窗口标识
+                    websocket = new WebSocket(url);
+                } else {
+                    alert("Not support websocket");
+                }
+                //连接发生错误的回调方法
+                websocket.onerror = function() {
+                    console.log("webSocket_Err");
+                };
+                //连接成功建立的回调方法
+                websocket.onopen = function(event) {
+                    console.log("open");
+                };
+                //接收到消息的回调方法
+                let playerList = {};
+                playerList.playerId = [];
+                websocket.onmessage = function(event) {
+                    // console.log(JSON.parse(event.data))
+                    // var data = JSON.parse(event.data);
+                    let data = event.data.split('&') 
+                    // console.log(data)
+                    let currentTime = data[0] //当前时间
+                    let currentGps = [data[2],data[1]] //当前经纬度
+                    let currentspeed = data[3] //当前速度
+                    let alldis = data[4] //当前运动的总距离
+                    let sportmanid = data[5] //当前运动员id
+                    let islocation = data[6] //是否定位
+                    let pace
+                    if(currentspeed>0){
+                        if(String(60/currentspeed).split('.')[1]){
+                            pace = String(60/currentspeed).split('.')[0]+':'+String(String(60/currentspeed).split('.')[1]*60).substring(0,2)
+                        }else{
+                            pace= String(60/currentspeed).split('.')[0]+':'+'00'
+                        }
+                    }else{
+                        pace = '00:00'
+                    }
+                    // console.log(pace)
+                    // console.log(islocation)
+                    if (islocation == "1") {
+                        for (let i = 0; i < that.playInfo.length; i++) {
+                            let item = that.playInfo[i];
+                            if (sportmanid == item.id) {
+                                //给这个人添加
+                                let alldisArr = String(alldis).split('.')
+                                let thetotalDistance = alldisArr[0]+'.'+alldisArr[1].substring(0,2)
+                                that.$set(that.playInfo[i], 'totalDistance', thetotalDistance) //总距离
+                                that.$set(that.playInfo[i], 'speed', pace) //配速
+                                that.$set(that.playInfo[i], 'speed2', currentspeed) //速度
+                                that.$set(that.playInfo[i], 'speedRoutLength', (currentspeed*that.rankMaxLength)/that.speedMax)
+                                that.$set(that.playInfo[i], 'disRoutLength', (thetotalDistance*that.rankMaxLength)/that.disMax)
+                                let id = item.id;
+                                if (!item.lineArr) {
+                                    //轨迹数组
+                                    item.lineArr = [];
+                                    item["compare" + id] = [];
+                                }
+                                if (item["compare" + id].length <= 1) {
+                                    if (!item.marker) {
+                                        item["compare" + id].push(currentGps);
+                                        //第一次拿到选手数据
+                                        if(!that.isFirst){
+                                            that.createmap.setCenter(currentGps);
+                                            that.isFirst = true
+                                        }
+                                        let infoId = 'info'+id
+                                        item.marker = new AMap.Marker({
+                                            map: that.createmap,
+                                            position: item.lineArr[0],
+                                            content:
+                                            '<div style="display:inline-block;width:12px;height:12px;border-radius:50%;background:' + item.color +';border:2px solid #fff"></div>',
+                                            offset: new AMap.Pixel(-7, -7),
+                                            label: {
+                                            offset: new AMap.Pixel(3, 3), //设置文本标注偏移量
+                                            direction: "right",
+                                            content:
+                                                '<div class="markerInfo" id='+infoId+' style="display:none;background:#fff;padding:10px;position:absolute;top:-28px;left:-25px">'+
+                                                    '<div>'+"dfdf"+'</div>'+
+                                                '</div>'+
+                                                '<div class="info" id='+id+' style="font-weight:900;text-shadow:-1px 0 white,0 1px white,1px 0 white,0 -1px white; position: relative;top: 0;right: 0;min-width: 0;background: transparent; border: none;box-shadow: none;padding: 0;color:' +
+                                                item.color +
+                                                '">' +
+                                                "<p>" +
+                                                item.name +
+                                                "</p>" +
+                                                "</div>"
+                                            }
+                                        })
+                                        item.marker.on('click',function(e){
+                                            $('.markerInfo').css('display','none')
+                                            let markerinfo = document.getElementById(id)
+                                            markerinfo.style.display="block"
+                                        })
+                                        item.passedPolyline = new AMap.Polyline({
+                                            map: that.createmap,
+                                            lineJoin: "round",
+                                            lineCap: "round",
+                                            strokeColor: item.color, //线颜色
+                                            strokeWeight: 4 //线宽
+                                        });
+                                        item.passedPolyline1 = new AMap.Polyline({
+                                            map: that.createmap,
+                                            lineJoin: "bevel",
+                                            lineCap: "round",
+                                            strokeColor: item.color, //线颜色
+                                            strokeWeight: 4 //线宽
+                                        });
+                                        item.marker.on("moving", function(e) {
+                                            item.passedPolyline.setPath(e.passedPath);
+                                        });
+                                        if (item.isSelect) {
+                                            if (item.marker) {
+                                                that.createmap.add(item.marker);
+                                            }
+                                            if (item.passedPolyline) {
+                                                that.createmap.add(item.passedPolyline);
+                                            }
+                                            if (item.passedPolyline1) {
+                                                that.createmap.add(item.passedPolyline1);
+                                            }
+                                        } else {
+                                            if (item.marker) {
+                                            that.createmap.remove(item.marker);
+                                            }
+                                            if (item.passedPolyline) {
+                                            that.createmap.remove(item.passedPolyline);
+                                            }
+                                            if (item.passedPolyline1) {
+                                            that.createmap.remove(item.passedPolyline1);
+                                            }
+                                        }
+                                    } else {
+                                        item["compare" + id].push(currentGps);
+                                    }
+                                } else {
+                                    if (item.isSelect) {
+                                        if (item.marker) {
+                                            that.createmap.add(item.marker);
+                                        }
+                                        if (item.passedPolyline) {
+                                            that.createmap.add(item.passedPolyline);
+                                        }
+                                        if (item.passedPolyline1) {
+                                            that.createmap.add(item.passedPolyline1);
+                                        }
+                                    } else {
+                                        if (item.marker) {
+                                            that.createmap.remove(item.marker);
+                                        }
+                                        if (item.passedPolyline) {
+                                            that.createmap.remove(item.passedPolyline);
+                                        }
+                                        if (item.passedPolyline1) {
+                                            that.createmap.remove(item.passedPolyline1);
+                                        }
+                                    }
+                                    let nowpoint = currentGps
+                                    let lastpoint = item["compare" + id][item["compare" + id].length - 1]; //最后一个点
+                                    if (lastpoint == "away") {
+                                        let usepoint = item["compare" + id][item["compare" + id].length - 2];
+                                        let x = (Number(nowpoint[0]) + Number(usepoint[0])) / 2
+                                        let y = (Number(nowpoint[1]) + Number(usepoint[1])) / 2
+                                        item["compare" + id].push(nowpoint);
+                                        item.lineArr.push([x, y]); //真正运动的点
+                                        if (item.lineArr.length > 30) {
+                                            item.lineArr.splice(0, 1);
+                                        } 
+                                        item.passedPolyline1.setPath(item.lineArr.slice(0, item.lineArr.length - 1));
+                                        let p1 = item.lineArr[item.lineArr.length - 1];
+                                        let p2 = item.lineArr[item.lineArr.length - 2];
+                                        let dis = AMap.GeometryUtil.distance(p1, p2);
+                                        item.marker.moveAlong(item.lineArr.slice(item.lineArr.length - 2),dis * 2);
+                                    } else {
+                                        //和上个点判断距离，如果小于2.5，抛弃
+                                        let dis = AMap.GeometryUtil.distance(nowpoint, lastpoint);
+                                        if (dis < 2.5) {
+                                            //如果小于2.5，抛弃
+                                            item["compare" + id].push("away");
+                                        } else {
+                                            item["compare" + id].push(nowpoint);
+                                            item.lineArr.push(nowpoint); //真正运动的点
+                                            if (item.lineArr.length > 30) {
+                                                item.lineArr.splice(0, 1);
+                                            } else {
+                                            }
+                                            item.passedPolyline1.setPath(item.lineArr.slice(0, item.lineArr.length - 1));
+                                            let p1 = item.lineArr[item.lineArr.length - 1];
+                                            let p2 = item.lineArr[item.lineArr.length - 2];
+                                            let dis = AMap.GeometryUtil.distance(p1, p2);
+                                            item.marker.moveAlong(item.lineArr.slice(item.lineArr.length - 2),dis * 3.6);
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                };
+            },
+            slidestart(e) { //鼠标按下
+                e.stopPropagation();
+                this.ifBool = true;
+                // console.log("鼠标按下")
+            },
+            slidemove(e) { //鼠标拖动
+                // console.log("鼠标拖动")
+                if(this.ifBool) {
+                    if(!e.touches) {  //兼容移动端
+                        var x = e.clientX;
+                    } else {   //兼容PC端
+                        var x = e.touches[0].pageX;
+                    }
+                    //var x = e.touches[0].pageX || e.clientX; //鼠标横坐标var x
+                    var lineDiv_left = this.slidegetPosition(this.lineDiv).left; //长线条的横坐标
+                    var minDiv_left = x - lineDiv_left; //小方块相对于父元素（长线条）的left值
+                    if(minDiv_left >= this.lineDiv.offsetWidth - 18) {
+                        minDiv_left = this.lineDiv.offsetWidth - 18;
+                    }
+                    if(minDiv_left < 0) {
+                        minDiv_left = 0
+                    }
+                    this.showLine.style.width = minDiv_left+18 +'px'
+                    //设置拖动后小方块的left值
+                    this.minDiv.style.left = minDiv_left + "px";
+                    this.onChange(minDiv_left)
+                }
+            },
+            slideend(e) { //鼠标弹起
+                // console.log("鼠标弹起")
+                this.ifBool = false;
+            },
+            slidegetPosition(node) {
+                var left = node.offsetLeft; //获取元素相对于其父元素的left值var left
+                var top = node.offsetTop;
+                current = node.offsetParent; // 取得元素的offsetParent
+                // 一直循环直到根元素
+                while(current != null) {
+                    left += current.offsetLeft;
+                    top += current.offsetTop;
+                    current = current.offsetParent;
+                }
+                return {
+                    "left": left,
+                    "top": top
+                }
+            },
+            getGpsData(){ //获得gps数据
+                let that = this
+                $.ajax({
+                    url:baseUrl+'along/CrossSportsmanController/findListAndGpsDataByStartTime',
+                    type:'POST',
+                    async:false,
+                    data:JSON.stringify({
+                        competitionId: getQueryString('gameid'),
+                        competitionItemId: getQueryString('gameitemid'),
+                        groupId: getQueryString('gameitemgroupid'),
+                        sportsmanIds:that.sids,
+                    }),
+                    headers:{
+                        'Content-Type':'application/json;charset=UTF-8;'   
+                    },
+                    success(res){
+                        console.log(res)
+                        if(res.status == 1){
+                            that.createmap.clearMap()
+                            let man = {}
+                            man.item = []
+                            man.id = []
+                            let startTimelist = []
+                            let endTimelist = []
+                            for (let i = 0; i < res.data.length; i++) {
+                                let item = res.data[i]
+                                if (item.gListStr && item.gListStr.length > 0) {
+                                    that.createmap.setCenter([
+                                        item.gListStr[0].split('&')[2],
+                                        item.gListStr[0].split('&')[1],
+                                    ])
+                                    startTimelist.push(item.gListStr[0].split('&')[0])
+                                    endTimelist.push(item.gListStr[item.gListStr.length-1].split('&')[0])
+                                    // startTimelist.push(new Date(item.gpsData[0].currTime).getTime())
+                                    // endTimelist.push(new Date(item.gpsData[item.gpsData.length - 1].currTime).getTime())
+                                    man.item.push(item)
+                                    man.id.push(item.id)
+                                    man["arr" + item.id] = []
+                                    man["compare" + item.id] = []
+                                    man["gps" + item.id] = []
+                                    let gpslist = item.gListStr
+                                    for (let j = 0; j < gpslist.length; j++) {
+                                        let origindata = gpslist[j].split('&')
+                                        let gpsitem = {
+                                            longitude:origindata[2],
+                                            latitude:origindata[1],
+                                            currTime:origindata[0]
+                                        }
+                                        man["gps" + item.id].push(gpsitem);
+                                        if (man["arr" + item.id].length <= 1) {
+                                            man["arr" + item.id].push([
+                                                gpsitem.longitude,
+                                                gpsitem.latitude
+                                            ]);
+                                            man["compare" + item.id].push([
+                                                gpsitem.longitude,
+                                                gpsitem.latitude
+                                            ]);
+                                        } else {
+                                            let nowpoint = [gpsitem.longitude, gpsitem.latitude]
+                                            let lastpoint = man["compare" + item.id][man["compare" + item.id].length - 1] //最后一个点
+                                            if (lastpoint != "away") {
+                                                //上个点是正常点
+                                                let dis = AMap.GeometryUtil.distance(nowpoint, lastpoint)
+                                                if (dis < 2.5) {
+                                                    //抛弃
+                                                    man["compare" + item.id].push("away")
+                                                } else {
+                                                    //保留
+                                                    man["compare" + item.id].push(nowpoint)
+                                                    man["arr" + item.id].push(nowpoint) //真正运动的点
+                                                }
+                                            } else {
+                                                let usepoint = man["compare" + item.id][man["compare" + item.id].length - 2]
+                                                let dis = AMap.GeometryUtil.distance(nowpoint, usepoint)
+                                                let x = (Number(nowpoint[0]) + Number(usepoint[0])) / 2
+                                                let y = (Number(nowpoint[1]) + Number(usepoint[1])) / 2
+                                                gpsitem.longitude = x
+                                                gpsitem.latitude = y
+                                                man["compare" + item.id].push(nowpoint)
+                                                man["arr" + item.id].push([x, y]) //真正运动的点
+                                            }
+                                        }
+                                    }
+                                } 
+                            }
+                            for (var i = 0; i < man.item.length; i++) {
+                                let theitem = man.item[i]
+                                let item = theitem.id
+                                // let second = that.getTimeDiff (
+                                //     man["gps" + item][man["gps" + item].length - 1].currTime,
+                                //     man["gps" + item][0].currTime
+                                // ) / 1000
+                                let second = (man["gps" + item][man["gps" + item].length - 1].currTime-man["gps" + item][0].currTime) / 1000
+                                let indexArr = String(i).split("")
+                                let theindex = indexArr[String(i).split("").length - 1] - 0
+                                var dis = that.theamap.GeometryUtil.distanceOfLine(man["arr" + item])
+                                let arrlength = man["arr" + item].length
+                                man["speed" + item] = (dis / second) * 3.6
+                                // console.log(dis)
+                                man["historypassedPolyline" + item] = new that.theamap.Polyline({
+                                    map: that.createmap,
+                                    lineJoin: "round",
+                                    strokeColor: theitem.colorFlag?theitem.colorFlag:that.colorArr[theindex + 1], //线颜色
+                                    strokeWeight: 4, //线宽
+                                    strokeOpacity: 1,
+                                    zIndex: 51,
+                                })
+                                man["historypassedPolyline1" + item] = new that.theamap.Polyline({
+                                    map: that.createmap,
+                                    lineJoin: "round",
+                                    path:man['arr'+item],
+                                    strokeColor: theitem.colorFlag?theitem.colorFlag:that.colorArr[theindex+1], //线颜色
+                                    strokeWeight: 4, //线宽
+                                    strokeOpacity: 1,
+                                    zIndex: 51
+                                })
+                                that.createmap.remove(man["historypassedPolyline1" + item])
+                                let manno = ''
+                                if(theitem.no){
+                                    manno = theitem.no
+                                }
+                                let infoId = 'info'+item
+                                let itemcolor = theitem.colorFlag?theitem.colorFlag:that.colorArr[theindex+1]
+                                man["historymarker" + item] = new that.theamap.Marker({
+                                    map: that.createmap,
+                                    position: man["arr" + item][0],
+                                    content:
+                                        '<div  class="marker" style="display:inline-block;width:'+13+'px;height:'+13+'px;border-radius:50%;background-color:'+itemcolor+';border:2px solid #fff"></div>',
+                                    offset: new that.theamap.Pixel(-7, -7),
+                                    label: {
+                                        offset: new that.theamap.Pixel(0, 0), //设置文本标注偏移量
+                                        direction: "right",
+                                        content:
+                                        '<div class="markerInfo" id='+infoId+' style="width:120px;display:none;background:#fff;padding:10px;position:absolute;top:-153px;left:-36px;box-shadow:0px 0px 12px #888">'+
+                                            '<div class="markername" style="margin-top:3px">'+"姓名：里斯"+'</div>'+
+                                            '<div class="markernumber" style="margin-top:3px">'+"姓名：里斯"+'</div>'+
+                                            '<div class="markerspeed" style="margin-top:3px">'+"姓名：里斯"+'</div>'+
+                                            '<div class="markerdis" style="margin-top:3px">'+"姓名：里斯"+'</div>'+
+                                            '<div class="markerlng" style="margin-top:3px">'+"姓名：里斯"+'</div>'+
+                                            '<div class="markerlat" style="margin-top:3px">'+"姓名：里斯"+'</div>'+
+                                            '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px">'+
+                                                '<p>'+
+                                                    '<img style="vertical:middle" src="./img/dianliang2.png" />'+
+                                                    '<span style="vertical:middle;margin-left:5px">'+"80%"+'</span>'+
+                                                '</p>'+
+                                                '<img src="./img/youxinhao.png" />'+
+                                                '<img src="./img/weizhi2.png" />'+
+                                            '</div>'+
+                                            '<img src="./img/bjk.png" style="position:absolute;bottom:-14px;left:48px" />'+
+                                        '</div>'+
+                                        '<div class="info" id='+item+' style="font-weight:900;text-shadow:-1px 0 white,0 1px white,1px 0 white,0 -1px white; position: relative;top: 0;right: 0;min-width: 0;background: transparent; border: none;box-shadow: none;padding: 0;color:' +
+                                        itemcolor +
+                                        '">' +
+                                            '<p  style="font-weight:900;text-shadow:-1px 0 white,0 1px white,1px 0 white,0 -1px white; position: relative;top: 0;right: 0;min-width: 0;background: transparent; border: none;box-shadow: none;padding: 0;color:' + itemcolor +'">'+theitem.name+'</p>'+
+                                            '<p  style="font-weight:900;text-shadow:-1px 0 white,0 1px white,1px 0 white,0 -1px white; position: relative;top: 0;right: 0;min-width: 0;background: transparent; border: none;box-shadow: none;padding: 0;color:' + itemcolor +'">'+theitem.nationality + manno+'</p>'+
+                                        "</div>"
+                                    }
+                                })
+                                man["historymarker" + item].on('click',function(e){
+                                    $('.markerInfo').css('display','none')
+                                    let markerinfo = document.getElementById(infoId)
+                                     markerinfo.style.display="block"
+                                })
+                            }
+                            startTimelist.sort()
+                            endTimelist.sort()
+                            let diffTime =
+                                (endTimelist[endTimelist.length - 1] - startTimelist[0]) / 1000
+                            this.progressMan = diffTime
+                            that.moveStep = (that.lineDiv.offsetWidth - 18) / diffTime
+                            that.manList = man
+                            // console.log(that.manList)
+                        }
+                    }
+                })
+            },
+            getTimeDiff(recordTime, golbTime) {//获取时间差
+                var curr_time = new Date(recordTime).getTime()
+                var first_time = new Date(golbTime).getTime()
+                var diff = curr_time - first_time
+                return diff
+            },
+            getTimeDiff2(recordTime, golbTime) { //获取时间差
+                var curr_time = new Date(recordTime).getTime();
+                var first_time = new Date(golbTime).getTime();
+                var diff = curr_time - first_time;
+                if(diff>0){
+                    //计算出小时数
+                    var leave1 = diff % (24 * 3600 * 1000) //计算天数后剩余的毫秒数
+                    var days = Math.floor(diff / (24 * 3600 * 1000));
+                    var hours = Number(days*24) + Number(Math.floor(leave1 / (3600 * 1000)))
+                    //计算相差分钟数
+                    var leave2 = leave1 % (3600 * 1000) //计算小时数后剩余的毫秒数
+                    var minutes = Math.floor(leave2 / (60 * 1000))
+                    //计算相差秒数
+                    var leave3 = leave2 % (60 * 1000) //计算分钟数后剩余的毫秒数
+                    var seconds = Math.round(leave3 / 1000)
+                    hours = hours >= 10 ? hours : "0" + hours;
+                    minutes = minutes >= 10 ? minutes : "0" + minutes;
+                    seconds = seconds >= 10 ? seconds : "0" + seconds;
+                    //赋值
+                    time =  hours + ":" + minutes + ":" + seconds;
+                    return time
+                }else{
+                    time =  '00' + ":" + '00' + ":" + '00';
+                    return time
+                }
+            },
+            compare(property) { //排序
+                return function (a, b) {
+                    var value1 = a[property];
+                    var value2 = b[property];
+                    return value2 - value1;
+                }
+            },
+            getmapGpsData(){
+                let that = this
+                $.ajax({
+                    url:baseUrl+'along/CrossMapController/findEntity',
+                    type:'POST',
+                    async:false,
+                    data:JSON.stringify({
+                        competitionId: getQueryString('gameid'),
+                        competitionItemId: getQueryString('gameitemid'),
+                        groupId: getQueryString('gameitemgroupid'),
+                    }),
+                    headers:{
+                        'Content-Type':'application/json;charset=UTF-8;'   
+                    },
+                    success(res){
+                        console.log(res)
+                        if(res.status == '1'){
+                            if(res.data){
+                                that.imgUrl =  res.data.mapUrl,
+                                that.westlng = res.data.westLng,
+                                that.southlat = res.data.southLat,
+                                that.eastlng = res.data.eastLng,
+                                that.northlat = res.data.northLat
+                                that.mapCenter = [(that.westlng+that.eastlng)/2,(that.southlat+that.northlat)/2]
+                                that.getMap()
+                            }else{
+                                that.westlng = 113.9439660000,
+                                that.southlat = 22.5288250000,
+                                that.eastlng = 113.9439660000,
+                                that.northlat = 22.5288250000
+                                that.mapCenter = [113.9439660000,22.5288250000]
+                                that.getMap()
+                            }
+                        }
+                    }
+                })
+            }
+        },
+        destroyed: function () {
+            clearInterval(this.alltimeInter)
+            clearInterval(this.orderInter)
+        },
+    })
+</script>
+</body>
+</html>

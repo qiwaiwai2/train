@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no, email=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <link rel="stylesheet" href="./common.css">
+    <script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+    <title>秀跑训练管理系统</title>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        font-size: 14px;
+    }
+    html,body{
+        width: 100%;
+        height: 100%;
+    }
+    .home{
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        overflow-y: auto;
+        background-color: #F2F3F7;
+    }
+    .home_box{
+        /* padding: 0 250px */
+        height: 100%;
+    }
+    
+    .title{
+        padding: 0 10px;
+        padding-bottom: 5px;
+        font-size: 18px;
+        color: #fff;
+        font-weight: 700;
+        border-bottom: 1px solid #384DC4
+    }
+    .content{
+        padding: 10px;
+        color: #666;
+        /* padding-right: 200px; */
+    }
+    .game_list{
+        height: 450px;
+        overflow-y: auto;
+    }
+    .game_item{
+        margin-bottom: 10px;
+    }
+    .game_item h3{
+        font-weight: 800;
+        font-size: 16px;
+        color: #fff;
+        margin-bottom: 8px;
+    }
+    .game_item_list li{
+        display: flex;
+        font-size: 12px;
+        justify-content: space-between;
+        color: #fff;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    .game_item_list p{
+        text-align: left;
+        margin-bottom: 0;
+    }
+    .game_item_list p:nth-child(1){
+        flex: 3
+    }
+    .game_item_list p:nth-child(2){
+        flex: 1
+    }
+    .head{
+        width: 100%;
+        display: block;
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+    }
+    .home_container{
+        height: 100%;
+        background:url('./img/background.png') no-repeat center center ;
+        background-size: 100% 100%;
+        overflow: auto;
+        padding: 0 25px;
+    }
+    .wordImg{
+        display: block;
+        margin: 0 auto;
+        margin-top: 70px;
+        width: 200px;
+        margin-bottom: 10px;
+    }
+</style>
+<body>
+    <div class="home_box">
+        <img class="head" src="./img/head.png" alt="">
+        <div class="home_container">
+            <img class="wordImg" src="./img/new_word.png" alt="">
+            <div class="title">选择赛事：</div>
+            <div class="content">
+                <div class="game_list">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    $('.wordImg').css('margin-top',$('.head').height()+20)
+    // var baseUrl = "http://192.168.100.10:8090/"
+    var baseUrl = "http://run.alongtech.com:8090/";
+    $.ajax({//获取赛事赛项
+        url:baseUrl+'along/CrossCompetitionController/findAllCompetition',
+        type:'POST',
+        async:false,
+        success(res){
+            // console.log(res)
+            if(res.status == 1){
+                let data = res.data
+                for(let i = 0;i<data.length;i++){
+                    let item = data[i]
+                    $.ajax({//获取赛事赛项
+                        url:baseUrl+'along/CrossCompetitionController/findEntity',
+                        type:'POST',
+                        data:{competitionId:item.id},
+                        async:false,
+                        success(res){
+                            // console.log(res)
+                            if(res.status == 1){
+                                let divs = ''
+                                let itemdata = res.data
+                                let itemgrouplist = itemdata.itemGroup
+                                // console.log(itemgrouplist)
+                                let groups = ''
+                                for(let i = 0;i<itemgrouplist.length;i++){
+                                    let itemlist = itemgrouplist[i]
+                                    let startdata = itemlist.startDate.replace(/\s/ig,'');
+                                    let enddata = itemlist.endDate.replace(/\s/ig,'');
+                                    let playType = itemlist.isPlay==0?'未开始':(itemlist.isPlay==1?'直播':'回放')
+                                    let color = itemlist.isPlay==0?'#e76e03':(itemlist.isPlay==1?'#06f027':'#fff')
+                                    groups += '<li isplay='+itemlist.isPlay+' gameid='+itemdata.id+' gameitemid='+itemlist.competitionItemId+' starttime='+startdata+' endtime='+enddata+' gameitemgroupid='+itemlist.id+'>'+
+                                                '<p>'+itemlist.itemName+'</p>'+
+                                                '<p>'+'</p>'+
+                                                '<p style="color:'+color+'">'+playType+'</p>'+
+                                            '</li>'
+                                }
+                                divs= '<div class="game_item">'+
+                                            '<h3>'+itemdata.name+'</h3>'+
+                                            '<ul class="game_item_list">'+groups+'</ul>'+
+                                        '</div>';
+                                $('.game_list').append(divs)
+                                $('.game_item_list li').off().on('click',function(){
+                                    let gameid = $(this).attr('gameid')
+                                    let gameitemid = $(this).attr('gameitemid')
+                                    let gameitemgroupid = $(this).attr('gameitemgroupid')
+                                    let startTime = $(this).attr('starttime')
+                                    let endTime = $(this).attr('endtime')
+                                    window.location.href = './gps.html?gameid='+gameid+'&gameitemid='+gameitemid+'&gameitemgroupid='+gameitemgroupid+'&startTime='+startTime+'&endTime='+endTime+'&isplay='+$(this).attr('isplay')
+                                })
+                            }
+                        }
+                    })
+                }
+            }
+        }
+    })
+</script>
+</html>

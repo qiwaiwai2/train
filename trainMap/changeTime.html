@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no, email=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <link rel="stylesheet" href="./common.css">
+    <script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+    <title>秀跑训练管理系统</title>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        font-size: 14px;
+    }
+    html,body{
+        height: 100%;
+        width: 100%;
+    }
+    .home{
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        overflow-y: auto;
+        background-color: #F2F3F7;
+    }
+    .home_box{
+        /* padding: 0 250px */
+        height: 100%;
+    }
+    
+    .title{
+        padding: 0 10px;
+        padding-bottom: 5px;
+        font-size: 18px;
+        color: #333;
+        font-weight: 700;
+        border-bottom: 1px solid #999
+    }
+    .content{
+        padding: 10px;
+        color: #666;
+        /* padding-right: 200px; */
+    }
+    .select_year{
+        display: flex;
+        margin-bottom: 10px;
+    }
+    .select_word{
+        white-space: nowrap;
+    }
+    .year_list{
+        *zoom: 1;
+    }
+    .year_list::after{
+        content: '';
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;
+    }
+    .year_list>span{
+        margin-left: 20px;
+        float: left;
+        margin-bottom: 5px;
+        cursor: pointer
+    }
+    .year_list .active{
+        color: #59ACF8;
+        text-decoration: underline;
+        cursor:default
+    }
+    .game_list{
+        /* height: 450px; */
+        /* overflow-y: auto; */
+    }
+    .game_item{
+        margin-bottom: 10px;
+    }
+    .game_item h3{
+        font-weight: 800;
+        font-size: 14px;
+        color: #666
+    }
+    .game_item_list{
+        /* padding-right: 50px; */
+    }
+    .game_item_list li{
+        background-color: rgba(255,255,255,0.8);
+        border-radius: 5px;
+        padding: 20px 10px;
+        text-align: center;
+        cursor: pointer;
+        color: #4275DE;
+        font-size: 14px;
+        margin-top: 20px;
+    }
+    .game_item_list p{
+        text-align: left;
+        margin-bottom: 0;
+    }
+    .game_item_list p:nth-child(1){
+        /* flex: 3 */
+    }
+    .game_item_list p:nth-child(2){
+        /* flex: 1 */
+    }
+    .game_list::-webkit-scrollbar{
+        width: 10px;
+    }
+    .game_list::-webkit-scrollbar-thumb{
+        background-color: #F2F3F7;
+        box-shadow: 0
+    }
+    .game_list::-webkit-scrollbar-track{
+        background-color: #fff;
+    }
+    .game_list::-webkit-scrollbar{
+        background-color: #fff;
+    }
+    .shadow{
+        display: none;
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,.6);
+        z-index: 1000;
+        text-align: center;
+    }
+    .confirmTip{
+        width: 230px;
+        height: 100px;
+        background-color: #fff;
+        border-radius: 8px;
+        margin: 0 auto;
+        overflow: hidden;
+        margin-top: 150px;
+    }
+    .head{
+        width: 100%;
+        display: block;
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+    }
+    .home_container{
+        border: 1px solid #59ACF8;
+        margin: 0 auto;
+        background-color: #fff;
+    }
+    .home_container{
+        height: 100%;
+        background:url('./img/background.png') no-repeat center center ;
+        background-size: 100% 100%;
+        overflow: auto;
+        padding: 0 25px;
+    }
+    .wordImg{
+        display: block;
+        margin: 0 auto;
+        margin-top: 25px;
+        width: 120px;
+    }
+    .return{
+        margin-top: 44px;
+        color: #fff;
+        text-align: right;
+    }
+    .return img{
+        vertical-align: middle;
+        width: 15px;
+    }
+    .return span{
+        vertical-align: middle;
+        font-size: 14px;
+    }
+    .operate_btn{
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+</style>
+<body>
+    <div class="home_box">
+        <img class="head" src="./img/head.png" alt="">
+        
+        <div class="home_container">
+            <div class="return">
+                <img src="./img/fanhui.png" alt="">
+                <span>返回</span>
+            </div>
+            <!-- <div style="color: fff;font-size:20px;font-weight:900;text-align:center;color:#fff;margin-top:15px;">北大汇丰戈15拉练选拔第四站</div> -->
+            <div class="content">
+                <div class="game_list">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="shadow">
+        <div class="confirmTip">
+            <p class="titleWord" style="width:150px;margin:0 auto;margin-top: 10px;">请确认是否开始比赛</p>
+            <p style="width:145px;margin:0 auto;display: flex;justify-content:space-between;margin-top: 20px;">
+                <span class="confirmBtn" style="cursor: pointer;display:inline-block; width:48px;text-align:center;line-height:24px;border-radius:5px;background:#59ACF8;color:#fff;border: 1px solid #59ACF8;">确认</span>
+                <span class="cancelBtn" style="cursor: pointer;display:inline-block; width:48px;text-align:center;line-height:24px;border-radius:5px;background:#fff;color:#E2522B;border: 1px solid #E2522B;">取消</span>
+            </p>
+        </div>
+    </div>
+</body>
+<script>
+    $('.return').css('margin-top',$('.head').height()+5)
+     function formatDate(date){//时间格式化
+        date = new Date(date);
+        var y=date.getFullYear();
+        var m=date.getMonth()+1;
+        var d=date.getDate();
+        var h=date.getHours();
+        var m1=date.getMinutes();
+        var s=date.getSeconds();
+        m = m<10?("0"+m):m;
+        d = d<10?("0"+d):d;
+        h = h<10?("0"+h):h;
+        m1 = m1<10?("0"+m1):m1;
+        s = s<10?("0"+s):s;
+        return y+"-"+m+"-"+d+" "+h+":"+m1+":"+s;
+    }
+    // var baseUrl = "http://192.168.100.10:8090/"
+    var baseUrl = "http://run.alongtech.com:8090/";
+    $('.return').click(function(){
+        window.location.href="http://run.alongtech.com:82/cross_web_xl/admin-dist/index.html#/home"
+    })
+    $.ajax({//获取赛事赛项
+        url:baseUrl+'along/CrossCompetitionController/findAllCompetition',
+        type:'POST',
+        async:false,
+        success(res){
+            // console.log(res)
+            if(res.status == 1){
+                let data = res.data
+                for(let i = 0;i<data.length;i++){
+                    let item = data[i]
+                    $.ajax({//获取赛事赛项
+                        url:baseUrl+'along/CrossCompetitionController/findEntity',
+                        type:'POST',
+                        data:{competitionId:item.id},
+                        async:false,
+                        success(res){
+                            console.log(res)
+                            if(res.status == 1){
+                                let divs = ''
+                                let itemdata = res.data
+                                let itemgrouplist = itemdata.itemGroup
+                                // console.log(itemgrouplist)
+                                let groups = ''
+                                for(let i = 0;i<itemgrouplist.length;i++){
+                                    let itemlist = itemgrouplist[i]
+                                    if(itemlist.isPlay != 2){
+
+                                    
+                                    let startdata = itemlist.startDate.replace(/\s/ig,'');
+                                    let enddata = itemlist.endDate.replace(/\s/ig,'');
+                                    groups += '<li isplay='+itemlist.isPlay+' gameid='+itemdata.id+' gameitemid='+itemlist.competitionItemId+' starttime='+startdata+' endtime='+enddata+' >'+
+                                                '<p>'+itemdata.name+' '+itemlist.itemName+'</p>'+
+                                                '<div class="operate_btn">'+
+                                                    '<p class="begin" style="display:flex;align-items:center;justify-content:center;width:70px;height:35px;border-radius:5px;background:#59ACF8;color:#fff;margin-right:10px">'+'开始'+'</p>'+
+                                                    '<p class="end" style="display:flex;align-items:center;justify-content:center;width:70px;height:35px;border-radius:5px;background:#E2522B;color:#fff">'+'结束'+'</p>'+
+                                                '</div>'
+                                                // '<p>'+itemdata.location+'</p>'+
+
+                                            '</li>'
+                                        }
+                                }
+                                divs= '<div class="game_item">'+
+                                            // '<h3>'+itemdata.name+'</h3>'+
+                                            '<ul class="game_item_list">'+groups+'</ul>'+
+                                        '</div>';
+                                $('.game_list').append(divs)
+                                var gemeid,gameitemid
+                                $('.begin').off().on('click',function(){ //开始按钮
+                                    console.log(formatDate(new Date()))
+                                    gemeid = $(this).parents('li').attr('gameid')
+                                    gameitemid = $(this).parents('li').attr('gameitemid')
+                                    $('.shadow').css('display','block')
+                                    $('.titleWord').text('请确认是否开始比赛')
+                                    $('.confirmBtn').off().on('click',function(){ //确认按钮
+                                        $.ajax({
+                                            url:baseUrl+'along/CrossCompetitionItemsController/saveEntity',
+                                            type:'POST',
+                                            data:JSON.stringify({
+                                                competitionId:gemeid,
+                                                id:gameitemid,
+                                                startDate:formatDate(new Date())
+                                            }),
+                                            async:false,
+                                            headers:{
+                                                'Content-Type':'application/json;charset=UTF-8;'   
+                                            },
+                                            success(res){
+                                                if(res.status == 1){
+                                                    alert('开始比赛')
+                                                    $('.shadow').css('display','none')
+                                                }else{
+                                                    alert(res.msg)
+                                                    $('.shadow').css('display','none')
+                                                }
+                                            }
+                                        })
+                                    })
+                                })
+                                $('.end').off().on('click',function(){ //结束按钮
+                                    gemeid = $(this).parents('li').attr('gameid')
+                                    gameitemid = $(this).parents('li').attr('gameitemid')
+                                    $('.shadow').css('display','block')
+                                    $('.titleWord').text('请确认是否结束比赛')
+                                    $('.confirmBtn').off().on('click',function(){ //结束按钮
+                                        $.ajax({
+                                            url:baseUrl+'along/CrossCompetitionItemsController/saveEntity',
+                                            type:'POST',
+                                            data:JSON.stringify({
+                                                competitionId:gemeid,
+                                                id:gameitemid,
+                                                endDate:formatDate(new Date())
+                                            }),
+                                            async:false,
+                                            headers:{
+                                                'Content-Type':'application/json;charset=UTF-8;'   
+                                            },
+                                            success(res){
+                                                console.log(res)
+                                                if(res.status == 1){
+                                                    alert('结束比赛')
+                                                    $('.shadow').css('display','none')
+                                                }else{
+                                                    alert(res.msg)
+                                                    $('.shadow').css('display','none')
+                                                }
+                                            }
+                                        })
+                                    })
+                                })
+                                
+                                $('.cancelBtn').off().on('click',function(){ //取消按钮
+                                    $('.shadow').css('display','none')
+                                })
+                            }
+                        }
+                    })
+                }
+            }
+        }
+    })
+</script>
+</html>

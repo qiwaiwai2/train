@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>报名</title>
+</head>
+<style>
+    html,body{
+        width: 100%;
+        height: 100%;
+        background-color: #f0f2f5;
+    }
+    *{
+        margin: 0;
+        padding: 0;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        font-style: normal;
+        text-decoration: none;
+        border: none;
+        font-weight: normal;
+        font-family: "Microsoft Yahei";
+        box-sizing: border-box;
+        -webkit-tap-highlight-color:transparent;
+        -webkit-font-smoothing: antialiased;
+    }
+    .head{
+        width: 100%;
+        display: block;
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+    }
+    .cont{
+        height: 100%;
+        /* background:url('./img/background.png') no-repeat center center ; */
+        background-size: 100% 100%;
+        overflow: auto;
+        padding: 0 15%;
+    }
+    .game_list{
+        /* margin-top: 50px; */
+        /* width: 80%; */
+    }
+    .game_list li{
+        display: flex;
+        align-items: center;
+        margin-top: 20px;
+        justify-content: space-between;
+        /* color: #fff; */
+    }
+    .game_list li div{
+        display: flex;
+    }
+    .game_list li .download_btn{
+        width: 50px;
+        line-height: 30px;
+        background-color: #02AD36;
+        border-radius: 3px;
+        color: #fff;
+        text-align: center;
+        cursor: pointer;
+        margin-right: 15px;
+    }
+    .game_list li .upload_btn{
+        width: 50px;
+        line-height: 30px;
+        background-color: #EB6A31;
+        border-radius: 3px;
+        color: #fff;
+        text-align: center;
+        cursor: pointer;
+    }
+    
+    .shadow{
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,.7);
+        z-index: 1000;
+        text-align: center;
+    }
+    .progress {
+        width: 600px;
+        height: 10px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        margin: 10px 0px;
+        overflow: hidden;
+    }
+    /* 初始状态设置进度条宽度为0px */
+    .progress > div {
+        width: 0px;     
+        height: 100%;
+        background-color: yellowgreen;
+        transition: all .3s ease;
+    }
+    [v-cloak] {
+        display: none;
+    }
+    html,body{
+        height: 100%;
+    }
+    .sign_up{
+        height: 100%;
+    }
+    .cont>.cont_head{
+        color: #387EE8;
+        font-weight: 22px;
+        border-bottom: 1px solid #DDD;
+        padding-bottom: 5px;
+        margin-top: 50px;
+    }
+</style>
+<body>
+    <div class="sign_up" id="app">
+        <div v-cloak class="shadow" v-show="loading">
+            <img style="margin-top: 200px;" src="./img/loading.gif" alt="">
+            <p style="color: #fff;">导入中请稍后~</p>
+        </div>
+        <!-- <img class="head" src="./img/head.png" alt=""> -->
+        
+        <div class="cont">
+            <div class="cont_head">报名表下载/上传</div>
+            <input class="import-btn" type="file" multiple="multiple" accept=".xlsx" style="display: none">
+            <ul class="game_list">
+                <li v-for="(item) in gamelist">
+                    <p v-cloak style="min-width:50%">{{item.name}}</p>
+                    <div>
+                        <p v-cloak @click="download(item.id)" class="download_btn">下载</p>
+                        <p v-cloak @click="upload(item.id)" class="upload_btn">上传</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+    <script>
+        $('.game_list').css('margin-top',$('.head').height()+20)
+        function handleFile (){
+            $('.shadow').css('display','block')
+        }
+        var baseUrl = "http://run.alongtech.com:8090/";
+        var app = new Vue({
+            el:'#app',
+            data:{
+               loading:false,
+               gamelist:[],
+               testnumber:0,
+               competitionId:null
+            },
+            mounted(){
+                this.getData()
+            },
+            methods:{
+                getData(){ //获取数据
+                    let that = this;
+                    getGame().then((res)=>{
+                        // console.log(res)
+                        if(res.status==1){
+                            if(res.status == 1){
+                                let data = res.data
+                                that.gamelist = data
+                            }
+                        }
+                    })
+                },
+                download(id){ //下载
+                    let url = baseUrl + "along/CrossCompetitionController/downExcel?competitionId="+id;
+                    window.location.href = url
+                },
+                upload(id){ //上传
+                    let that = this
+                    that.competitionId = id
+                    $('.import-btn').off().on('change',that.handleFile)
+                    $('.import-btn').click()
+                },
+                handleFile (){
+                    let that = this
+                    let number = 0
+                    that.testnumber = 1
+                    that.loading = true
+                    setTimeout(function(){
+                        for(let i = 0;i<$('.import-btn')[0].files.length;i++){
+                            let item = $('.import-btn')[0].files[i]
+                            let formData = new FormData()
+                            formData.append('file', item)
+                            // 此处可传入多个参数
+                            formData.append('competitionId', that.competitionId)
+                            $.ajax({
+                                url:  baseUrl + "along/CrossCompetitionController/upload",
+                                type: 'post',
+                                async: false,
+                                data: formData,
+                                dataType: 'json',
+                                // 告诉jQuery不要去处理发送的数据
+                                processData: false,
+                                // 告诉jQuery不要去设置Content-Type请求头
+                                contentType: false,
+                                beforeSend: function () {
+                                    console.log('正在进行，请稍候')
+                                },
+                                success: function (res) {
+                                    console.log(res)
+                                    if(res.status==1){
+                                        number++
+                                        if($('.import-btn')[0].files.length==number){
+                                            $(".import-btn").remove()
+                                            that.loading = false
+                                            alert('导入成功')
+                                        }
+                                        var createinput = '<input class="import-btn" type="file" multiple="multiple" accept=".xlsx" style="display: none">';
+                                        $('body').append(createinput)
+                                    }else{
+                                        alert(res.msg)
+                                        that.loading = false
+                                    }
+                                },
+                                error:function(){
+                                    that.loading = false
+                                }
+                            })
+                        }
+                    },100)
+                }
+            }
+        })
+        //获取赛事
+        function getGame (){ 
+            return new Promise((resolve,reject)=>{
+                $.ajax({
+                    type:'POST',
+                    url:baseUrl + "along/CrossCompetitionController/findAllCompetition",
+                    data:'',
+                    async:false,
+                    success: function(res){
+                        resolve(res)
+                    },
+                    error:function(err){
+                        reject(err)
+                    }
+                })
+            })
+        }
+    </script>
+</body>
+</html>
